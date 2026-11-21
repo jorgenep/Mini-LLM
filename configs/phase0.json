@@ -1,0 +1,19 @@
+{
+  "phase": 0,
+  "required_target": "Intel Arc Pro B70, 32 GB GDDR6",
+  "allow_training_on_fallback_accelerator": false,
+  "mandatory_gates": [
+    "b70_detected",
+    "intel_runtime_available",
+    "level_zero_available",
+    "torch_xpu_available",
+    "bf16_gemm",
+    "forward_pass",
+    "backward_pass",
+    "optimizer_step",
+    "checkpoint_save_restore",
+    "short_training_stable",
+    "gpu_metrics_observable",
+    "throughput_measured"
+  ]
+}
