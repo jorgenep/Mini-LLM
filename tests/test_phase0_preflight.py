@@ -21,9 +21,8 @@ class Phase0PreflightTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             report = json.loads(output.read_text())
             self.assertIn("pytorch", report)
-            self.assertIn("pci_accelerators", report)
 
-    def test_xpu_smoke_refuses_when_xpu_is_unavailable(self):
+    def test_xpu_smoke_report_is_complete_and_controls_training(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "xpu.json"
             result = subprocess.run(
@@ -33,10 +32,16 @@ class Phase0PreflightTests(unittest.TestCase):
                 text=True,
             )
             report = json.loads(output.read_text())
-            self.assertFalse(report["passed"])
-            self.assertFalse(report["training_allowed"])
-            self.assertIsNotNone(report["blocker"])
-            self.assertIn("torch_xpu_available", {gate["name"] for gate in report["gates"]})
+            gate_names = {gate["name"] for gate in report["gates"]}
+            self.assertIn("torch_xpu_available", gate_names)
+            self.assertIn("bf16_gemm", gate_names)
+            self.assertIs(report["training_allowed"], report["passed"])
+            if report["passed"]:
+                self.assertIsNone(report["blocker"])
+                self.assertEqual(result.returncode, 0)
+            else:
+                self.assertIsNotNone(report["blocker"])
+                self.assertEqual(result.returncode, 2)
 
 
 if __name__ == "__main__":

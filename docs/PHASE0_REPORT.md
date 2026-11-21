@@ -38,3 +38,38 @@ No dataset collection, model training, or inference model work will start. A sup
 ## Exact next step
 
 Attach the B70 to the Linux host and install the matching Intel compute runtime, Level Zero stack, and a PyTorch XPU build, then rerun both Phase 0 scripts and the tests.
+
+## Remote B70 server — observed pass
+
+- SSH server: `root@e-ai-server`
+- OS: Ubuntu 26.04.1 LTS, kernel `7.0.0-38-generic`
+- CPU: AMD Ryzen 5 3600, 12 logical threads
+- PCI GPU: Intel Battlemage G31 / `8086:e223`
+- Device reported by clinfo: `Intel(R) Arc(TM) Pro B70 Graphics`
+- PyTorch: `2.15.0+xpu`
+- Python: `3.12.13`
+- PyTorch XPU: **available**
+- BF16 GEMM: **passed and finite**
+- Five-step BF16 forward/backward/optimizer test: **passed**
+- Loss values remained finite: `0.295230, 0.344595, 0.352045, 0.338661, 0.359977`
+- Checkpoint save/restore: **passed**
+- Local unit tests: **2/2 passed**
+- Remote unit tests: **2/2 passed**
+
+### Remote environment
+
+The installed isolated environment is:
+
+```bash
+source /opt/b70-code-platform/activate.sh
+```
+
+Or invoke it directly:
+
+```bash
+/opt/b70-code-platform/venv/bin/python
+```
+
+### Phase 0 result
+
+**PASS for remote B70 training eligibility.** Full dataset collection and training may proceed according to later phase exit criteria. GPU utilization and measured training throughput still require a representative training run.

@@ -1,0 +1,13 @@
+{
+  "vocab_size": 384,
+  "n_layers": 2,
+  "hidden_size": 64,
+  "n_heads": 4,
+  "n_kv_heads": 2,
+  "head_dim": 16,
+  "ffn_dim": 128,
+  "max_position_embeddings": 128,
+  "rope_theta": 100000.0,
+  "rms_norm_eps": 1e-6,
+  "tie_embeddings": true
+}

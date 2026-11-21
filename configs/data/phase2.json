@@ -1,0 +1,12 @@
+{
+  "languages": ["python", "javascript", "typescript"],
+  "seed": 1729,
+  "train_ratio": 0.90,
+  "validation_ratio": 0.05,
+  "test_ratio": 0.05,
+  "fim_psm": 0.50,
+  "fim_spm": 0.10,
+  "causal": 0.40,
+  "sequence_length": 2048,
+  "excluded_language_classifiers": ["generated", "vendored", "lockfile", "binary", "corrupt"]
+}

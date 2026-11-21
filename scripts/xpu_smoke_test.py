@@ -20,7 +20,13 @@ def main() -> int:
         import torch
     except Exception as exc:
         gates.append(check("torch_import", False, f"{type(exc).__name__}: {exc}"))
-        report = {"passed": False, "gates": gates, "training_allowed": False}
+        report = {
+            "schema_version": 1,
+            "passed": False,
+            "gates": gates,
+            "training_allowed": False,
+            "blocker": "PyTorch could not be imported",
+        }
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(report, indent=2) + "\n")
         print(json.dumps(report, indent=2))
@@ -39,11 +45,22 @@ def main() -> int:
 
             model = torch.nn.Linear(64, 64, dtype=torch.bfloat16, device="xpu")
             optimizer = torch.optim.AdamW(model.parameters())
-            x = torch.randn(8, 64, dtype=torch.bfloat16, device="xpu")
-            loss = model(x).float().square().mean()
-            loss.backward()
-            optimizer.step()
-            gates.append(check("forward_backward_optimizer", True, f"loss={loss.item():.6g}"))
+            losses = []
+            for _ in range(5):
+                optimizer.zero_grad(set_to_none=True)
+                x = torch.randn(8, 64, dtype=torch.bfloat16, device="xpu")
+                loss = model(x).float().square().mean()
+                loss.backward()
+                optimizer.step()
+                losses.append(loss.item())
+
+            finite_losses = all(torch.isfinite(torch.tensor(loss, dtype=torch.float32)).item() for loss in losses)
+            stable_training = finite_losses and all(loss < 1e6 for loss in losses)
+            gates.append(check(
+                "forward_backward_optimizer_short_training",
+                stable_training,
+                f"losses={[round(loss, 6) for loss in losses]}",
+            ))
 
             path = args.output.with_suffix(".pt")
             torch.save(model.state_dict(), path)
